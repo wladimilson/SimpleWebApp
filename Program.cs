@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using System.Text;
 using RazorLight;
+using Newtonsoft.Json;
 
 namespace WebApp
 {
@@ -32,15 +33,19 @@ namespace WebApp
             WebHost.CreateDefaultBuilder(args)
                 .Configure(app => 
                 {
+                    app.Map("/articles.json", conf => {
+                        app.Run(async (context) => {
+                            context.Response.ContentType = "text/json; charset=utf-8";
+                            var result = JsonConvert.SerializeObject(Articles());
+
+                            await context.Response.WriteAsync(result);
+                        });
+                    });
+
                     app.Run(async (context) =>
                     {
                         
                         context.Response.ContentType = "text/html; charset=utf-8";
-
-                        // var content = new StringBuilder("<dl>");
-                        // foreach(var article in Articles())
-                        //     content.Append($"<dt>{article.Title}</dt><dd>{article.Content}</dd>");
-                        // content.Append("</dt>");
 
                         string result = await engine.CompileRenderAsync("Home.cshtml", Articles());
 
@@ -52,12 +57,8 @@ namespace WebApp
 
         public static List<Article> Articles() {
             var articles = new List<Article>();
-            using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder
-                        {
-                            DataSource = "data.db"
-                        }.ToString()))
+            using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = "data.db" }.ToString()))
                 {
-                
                     connection.Open();
 
                     var command = connection.CreateCommand();
