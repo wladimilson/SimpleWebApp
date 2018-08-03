@@ -1,0 +1,16 @@
+@model IEnumerable<WebApp.Program.Article>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='UTF-8' />
+    <title>Aplicação web simples! - Blog</title>
+  </head>
+  <body>
+    <div>
+        @foreach (var article in Model){
+            <h2>@article.Title</h2>
+            <p>@article.Content</p>
+        }
+    </div>
+  </body>
+</html>

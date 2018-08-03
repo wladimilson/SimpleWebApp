@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using System.Text;
+using RazorLight;
 
 namespace WebApp
 {
@@ -23,7 +24,11 @@ namespace WebApp
         }
         public static void Main(string[] args)
         {
-            
+            var engine = new RazorLightEngineBuilder()
+                            .UseEmbeddedResourcesProject(typeof(Program))
+                            .UseMemoryCachingProvider()
+                            .Build();
+
             WebHost.CreateDefaultBuilder(args)
                 .Configure(app => 
                 {
@@ -32,12 +37,14 @@ namespace WebApp
                         
                         context.Response.ContentType = "text/html; charset=utf-8";
 
-                        var content = new StringBuilder("<dl>");
-                        foreach(var article in Articles())
-                            content.Append($"<dt>{article.Title}</dt><dd>{article.Content}</dd>");
-                        content.Append("</dt>");
+                        // var content = new StringBuilder("<dl>");
+                        // foreach(var article in Articles())
+                        //     content.Append($"<dt>{article.Title}</dt><dd>{article.Content}</dd>");
+                        // content.Append("</dt>");
 
-                        await context.Response.WriteAsync(content.ToString());
+                        string result = await engine.CompileRenderAsync("Home.cshtml", Articles());
+
+                        await context.Response.WriteAsync(result);
                     });
                 })
                 .Build().Run();
